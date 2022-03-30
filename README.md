@@ -1,0 +1,7 @@
+- poetry install
+- createuser django_saas_template
+- createdb django_saas_template
+- psql -d django_saas_template -c "GRANT ALL PRIVILEGES ON DATABASE django_saas_template TO django_saas_template"
+- psql -d django_saas_template -c "ALTER USER django_saas_template CREATEDB"
+- python manage.py migrate
+- python manage.py djstripe_sync_models

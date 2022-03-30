@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django_saas_template.subscriptions import models
+from subscriptions import models
 
 
 @admin.register(models.SaasPlan)

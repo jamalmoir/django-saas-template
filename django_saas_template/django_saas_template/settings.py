@@ -54,12 +54,11 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "django_extensions",
-    "django_filters",
     "djstripe",
     "core",
     "users",
     "organisations",
-    "subscrtiptions",
+    "subscriptions",
     "userfront",
 ]
 
@@ -111,7 +110,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
-AUTH_USER_MODEL = "django_saas_template.users.models.SaasUser"
+AUTH_USER_MODEL = "users.SaasUser"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -169,7 +168,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
-    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
 
@@ -181,7 +179,7 @@ STRIPE_LIVE_MODE = config("STRIPE_LIVE_MODE", cast=bool)
 DJSTRIPE_WEBHOOK_SECRET = config("DJSTRIPE_WEBHOOK_SECRET")
 DJSTRIPE_USE_NATIVE_JSONFIELD = True
 DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"
-DJSTRIPE_SUBSCRIBER_MODEL = "Organisation"
+DJSTRIPE_SUBSCRIBER_MODEL = "organisations.Organisation"
 
 
 # Userfront

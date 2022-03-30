@@ -19,7 +19,9 @@ class UuidModel(models.Model):
 
 
 class OrganisationAwareModel(models.Model):
-    organisation = models.ForeignKey("Organisation", on_delete=models.CASCADE)
+    organisation = models.ForeignKey(
+        "organisations.Organisation", on_delete=models.CASCADE
+    )
 
     class Meta:
         abstract = True

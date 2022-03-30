@@ -2,17 +2,26 @@ import datetime
 from typing import Optional
 
 import sentry_sdk
+from core import models as core_models
 from django.db import models
 from django.utils import timezone
-from django_saas_template.core import models as core_models
-from django_saas_template.subscriptions import models as subscription_models
-from django_saas_template.users import models as useer_models
 from djstripe import models as djstripe_models
+from subscriptions import models as subscription_models
+from users import models as user_models
 
 
 class Organisation(core_models.TimestampedModel, core_models.UuidModel):
     name = models.CharField(max_length=100)
     image = models.URLField()
+    owner = models.ForeignKey(
+        "Member",
+        on_delete=models.PROTECT,
+        related_name="owned_organisations",
+    )
+
+    @property
+    def email(self):
+        return self.owner.user.email
 
     @property
     def customer(self) -> djstripe_models.Customer:
@@ -43,8 +52,9 @@ class Organisation(core_models.TimestampedModel, core_models.UuidModel):
     @classmethod
     def create(
         cls,
-        name: Optional[str] = "",
-        tenant_id: Optional[str] = "",
+        name: str,
+        tenant_id: str,
+        owner_user: user_models.SaasUser,
         image: Optional[str] = "",
     ) -> "Organisation":
         organisation = cls.objects.create(
@@ -53,13 +63,18 @@ class Organisation(core_models.TimestampedModel, core_models.UuidModel):
             image=image,
         )
 
+        # Create and set the owner Member.
+        owner_member = Member.objects.create(organisation=organisation, user=owner_user)
+        organisation.owner = owner_member
+        organisation.save()
+
         # Create organisation's settings and set their trial to 30 days in the future.
         OrganisationSettings.objects.create(
             organisation=organisation,
             trials_ends_at=timezone.now() + datetime.timedelta(days=30),
         )
 
-        # Create a customer for the organisation in Stripe
+        # Create a customer for the organisation in Stripe.
         customer, _ = djstripe_models.Customer.get_or_create(subscriber=organisation)
 
         return organisation
@@ -69,7 +84,7 @@ class OrganisationSettings(core_models.TimestampedModel, core_models.UuidModel):
     organisation = models.OneToOneField(
         Organisation, on_delete=models.CASCADE, related_name="settings"
     )
-    trials_ends_at = models.DateTimeField(null=True, blank=True)
+    trials_ends_at = models.DateTimeField()
 
 
 class Member(core_models.TimestampedModel, core_models.UuidModel):
@@ -77,5 +92,5 @@ class Member(core_models.TimestampedModel, core_models.UuidModel):
         Organisation, on_delete=models.CASCADE, related_name="members"
     )
     user = models.ForeignKey(
-        useer_models.SaasUser, on_delete=models.CASCADE, related_name="memberships"
+        user_models.SaasUser, on_delete=models.CASCADE, related_name="memberships"
     )

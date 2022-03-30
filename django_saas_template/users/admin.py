@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django_saas_template.users import models
+from users import models
 
 
 @admin.register(models.SaasUser)
