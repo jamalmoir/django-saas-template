@@ -12,6 +12,7 @@ from djstripe import models as djstripe_models
 
 class Organisation(core_models.TimestampedModel, core_models.UuidModel):
     name = models.CharField(max_length=100)
+    image = models.URLField()
 
     @property
     def customer(self) -> djstripe_models.Customer:
@@ -40,9 +41,16 @@ class Organisation(core_models.TimestampedModel, core_models.UuidModel):
             return None
 
     @classmethod
-    def create(cls, name: Optional[str] = "") -> "Organisation":
+    def create(
+        cls,
+        name: Optional[str] = "",
+        tenant_id: Optional[str] = "",
+        image: Optional[str] = "",
+    ) -> "Organisation":
         organisation = cls.objects.create(
+            id=tenant_id,
             name=name,
+            image=image,
         )
 
         # Create organisation's settings and set their trial to 30 days in the future.
@@ -65,5 +73,9 @@ class OrganisationSettings(core_models.TimestampedModel, core_models.UuidModel):
 
 
 class Member(core_models.TimestampedModel, core_models.UuidModel):
-    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    user = models.ForeignKey(useer_models.SaasUser, on_delete=models.CASCADE)
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="members"
+    )
+    user = models.ForeignKey(
+        useer_models.SaasUser, on_delete=models.CASCADE, related_name="memberships"
+    )
